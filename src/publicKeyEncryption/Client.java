@@ -52,6 +52,9 @@ public class Client
 		//Thabo's key example
 		rsaGenerator RSA = new rsaGenerator();
 		//Try and encrypt key
+		System.out.println("attempt to encrypt the secret key with AES");
+		System.out.println("unencrypted key: "+key);
+		System.out.println("encrypted key: "+RSA.encryptSharedKey(key));
 		
 		
 	}
