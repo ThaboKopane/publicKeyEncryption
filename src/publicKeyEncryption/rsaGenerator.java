@@ -24,6 +24,10 @@ public class rsaGenerator {
 	SecretKey AESkey;
 	static Key publicKey, privateKey;
 	
+	/**
+	 * A constructor that calls init()
+	 * Init initialises the boucycastle security provider
+	 */
 	public rsaGenerator() {
 		init();
 	}
@@ -70,7 +74,13 @@ public class rsaGenerator {
 		
 	}
 	
-	//A method to save the RSA keys to the file system
+	/**
+	 * 
+	 * @param filename name of keys to save files as
+	 * @param mod biginteger and exponents, savinf keys this way
+	 * @param exp
+	 * @throws Exception
+	 */
 	public void saveKeysToFile(String filename, BigInteger mod, BigInteger exp) throws Exception{
 		ObjectOutputStream ObjectOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
 		
@@ -134,30 +144,37 @@ public class rsaGenerator {
 	}
 	
 	//A method to generate the shared AES key
-	void generateSharedKey() throws NoSuchAlgorithmException{
+	SecretKey generateSharedKey() throws NoSuchAlgorithmException{
 		AESkey = null;
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(128);
 		AESkey = keyGen.generateKey();
+		
+		return AESkey;
 	}
 	
 	//A method to encrypt the shared key
-	public byte[] encryptSharedKey() throws Exception{
+	public byte[] encryptSharedKey(SecretKey aesKey) throws Exception{
 		keyCipher = null;
 		byte[] key = null;
+		
+		//The Secrete AES key
+		aesKey = generateSharedKey();
 		try {
 			PublicKey puKey = readPublicKeyFromFile("public.key");
 			
 			keyCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			keyCipher.init(Cipher.ENCRYPT_MODE, puKey);
 			
-			key = keyCipher.doFinal(AESkey.getEncoded());
+			key = keyCipher.doFinal(aesKey.getEncoded());
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
 		return key; //the encrypted AES key
 	}
 	
+	
+	//A method to decrypt the shared key
 	public SecretKey decryptSharedKey(byte[] encryptedKey) throws Exception{
 		SecretKey aesKey = null;
 		keyDecipher = null;
@@ -181,7 +198,7 @@ public class rsaGenerator {
 	
 	public static void main(String[] args) {
 		
-		System.out.println("shit hit the fan");
+		
 		
 		rsaGenerator RSA = new rsaGenerator();
 		
@@ -193,8 +210,8 @@ public class rsaGenerator {
 		
 		
 		System.out.println("Encryption algorithm");
-		RSA.generateSharedKey();
-		byte[] keyJudas = RSA.encryptSharedKey();
+		SecretKey thabo_AES_key = RSA.generateSharedKey();
+		byte[] keyJudas = RSA.encryptSharedKey(thabo_AES_key);
 		System.out.println("The encrypeted shared key: "+ keyJudas);
 		
 		System.out.println("The decrypted shared key: "+ RSA.decryptSharedKey(keyJudas));
@@ -202,11 +219,7 @@ public class rsaGenerator {
 			e.printStackTrace();
 		}
 		
-		/*try {
-		System.out.println(generateRSAKey());
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}*/
+		System.out.println("shit is gesund very sehr gesund");
 	}
 	
 
