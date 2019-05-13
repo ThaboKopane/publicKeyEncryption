@@ -5,12 +5,16 @@ import java.io.*;
 import java.security.*;
 import java.security.spec.*;
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
+/**
+ * 
+ * @author thadishi
+ *A class that uses bouncy castle
+ *Generates public key to encrypt shared keys
+ */
 public class rsaGenerator {
 	
 	private Cipher keyCipher;
@@ -28,7 +32,8 @@ public class rsaGenerator {
 	}
 	
 	/*
-	 * Generate a public private key
+	 * Generate a public key and a private key using the RSA algorith
+	 * Store the keys into a file.
 	 */
 	
 	public void generateRSAKey() throws NoSuchAlgorithmException, GeneralSecurityException, IOException{
@@ -37,22 +42,24 @@ public class rsaGenerator {
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		
 		keyGen.initialize(1024);
-		
 		KeyPair keyPair = keyGen.generateKeyPair();
+		
+		//Generate the public key using the keyPair generator
 		publicKey = keyPair.getPublic();
 		System.out.println(publicKey);
 		
 		
-		//Make sure teh 
-		
+		//~Generate teh private key using the key pair generator
 		privateKey = keyPair.getPrivate();
 		System.out.println(privateKey);
 		
-		//output the keys
+		//Use RSAKeySPec to 
 		KeyFactory fact = KeyFactory.getInstance("RSA");
 		RSAPublicKeySpec pub = fact.getKeySpec(keyPair.getPublic(), RSAPublicKeySpec.class);
 		RSAPrivateKeySpec priv = fact.getKeySpec(keyPair.getPrivate(), RSAPrivateKeySpec.class);
 		
+		
+		//Save keeys to the file system
 		try {
 		saveKeysToFile("public.key", pub.getModulus(), pub.getPublicExponent());
 		saveKeysToFile("private.key", priv.getModulus(), priv.getPrivateExponent());
@@ -63,6 +70,7 @@ public class rsaGenerator {
 		
 	}
 	
+	//A method to save the RSA keys to the file system
 	public void saveKeysToFile(String filename, BigInteger mod, BigInteger exp) throws Exception{
 		ObjectOutputStream ObjectOut = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)));
 		
@@ -78,6 +86,8 @@ public class rsaGenerator {
 		}
 	}
 	
+	
+	//A method to read the saved RSA keys from the file system
 	PublicKey readPublicKeyFromFile(String fileName) throws IOException{
 		
 		FileInputStream in = new FileInputStream(fileName);
@@ -102,6 +112,7 @@ public class rsaGenerator {
 		return pubK;
 	}
 	
+	//A method to read the private key from the ssyetm
 	PrivateKey readPrivateKeyFromFile(String fileName) throws IOException{
 		FileInputStream in = new FileInputStream(fileName);
 	  	ObjectInputStream readObj =  new ObjectInputStream(new BufferedInputStream(in));
@@ -122,6 +133,7 @@ public class rsaGenerator {
 	  	return priKey;
 	}
 	
+	//A method to generate the shared AES key
 	void generateSharedKey() throws NoSuchAlgorithmException{
 		AESkey = null;
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
@@ -129,6 +141,7 @@ public class rsaGenerator {
 		AESkey = keyGen.generateKey();
 	}
 	
+	//A method to encrypt the shared key
 	public byte[] encryptSharedKey() throws Exception{
 		keyCipher = null;
 		byte[] key = null;
