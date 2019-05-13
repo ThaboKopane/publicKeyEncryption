@@ -21,7 +21,7 @@ public class rsaGenerator {
 	private Cipher keyDecipher;
 	
 	
-	SecretKey AESkey;
+	
 	static Key publicKey, privateKey;
 	
 	/**
@@ -145,7 +145,7 @@ public class rsaGenerator {
 	
 	//A method to generate the shared AES key
 	SecretKey generateSharedKey() throws NoSuchAlgorithmException{
-		AESkey = null;
+		SecretKey AESkey = null;
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 		keyGen.init(128);
 		AESkey = keyGen.generateKey();
