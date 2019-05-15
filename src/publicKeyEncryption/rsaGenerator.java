@@ -2,11 +2,16 @@ package publicKeyEncryption;
 
 
 import java.io.*;
+
 import java.security.*;
 import java.security.spec.*;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
+
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
@@ -40,7 +45,7 @@ public class rsaGenerator {
 	 * Store the keys into a file.
 	 */
 	
-	public void generateRSAKey() throws NoSuchAlgorithmException, GeneralSecurityException, IOException{
+public void generateRSAKey(String from) throws NoSuchAlgorithmException, GeneralSecurityException, IOException{
 		
 		//useBuilt 
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -50,12 +55,12 @@ public class rsaGenerator {
 		
 		//Generate the public key using the keyPair generator
 		publicKey = keyPair.getPublic();
-		System.out.println(publicKey);
+		//System.out.println(publicKey);
 		
 		
-		//~Generate teh private key using the key pair generator
+		//Generate teh private key using the key pair generator
 		privateKey = keyPair.getPrivate();
-		System.out.println(privateKey);
+		//System.out.println(privateKey);
 		
 		//Use RSAKeySPec to 
 		KeyFactory fact = KeyFactory.getInstance("RSA");
@@ -65,13 +70,12 @@ public class rsaGenerator {
 		
 		//Save keeys to the file system
 		try {
-		saveKeysToFile("public.key", pub.getModulus(), pub.getPublicExponent());
-		saveKeysToFile("private.key", priv.getModulus(), priv.getPrivateExponent());
+		saveKeysToFile(from+"/public.key", pub.getModulus(), pub.getPublicExponent());
+		saveKeysToFile(from+"/private.key", priv.getModulus(), priv.getPrivateExponent());
 		} catch (Exception e) {
-			throw new IOException("Error again", e);
+			throw new IOException("Error writing to file", e);
 		}
-		
-		
+	
 	}
 	
 	/**
@@ -194,6 +198,46 @@ public class rsaGenerator {
 		return aesKey;
 		
 	}
+	
+	//A method to encrypt the hash
+		public byte[] encryptHash(String hash) throws Exception{
+			keyCipher = null;
+			byte[] encHash = null;
+			//String hello = null;
+			try 
+			{
+				PrivateKey pvKey = readPrivateKeyFromFile("client/private.key");		
+				keyCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				keyCipher.init(Cipher.ENCRYPT_MODE, pvKey);
+				
+				encHash = keyCipher.doFinal(Base64.getDecoder().decode(hash));
+	                        //hello = Base64.getEncoder()
+			} catch (Exception e ) {
+				e.printStackTrace();
+			}
+			return encHash; //the encrypted hash
+		}
+
+		
+		//A method to decrypt the shared key
+		public String decryptHas(byte[] encryptedHash) throws Exception{
+			String temp = null;
+			keyDecipher = null;
+			
+			try {
+				PublicKey puKey = readPublicKeyFromFile("client/public.key");
+				keyDecipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				keyDecipher.init(Cipher.DECRYPT_MODE, puKey);
+	                        temp =  Base64.getEncoder().encodeToString(keyDecipher.doFinal(encryptedHash));
+				//hash = new String(temp);
+				
+			} catch(IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
+	                    e.printStackTrace();
+	                }
+			
+			return temp;
+			
+		}
 	
 	
 	public static void main(String[] args) {
